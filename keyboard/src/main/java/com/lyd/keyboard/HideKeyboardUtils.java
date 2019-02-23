@@ -65,17 +65,15 @@ public class HideKeyboardUtils {
      */
     public static boolean isShouldHideKeyboard(List<EditText> textList, MotionEvent event) {
         for (View view : textList) {
-            //判断触碰的View是否为EditText
-            if (view != null) {
-                int[] l = {0, 0};
-                view.getLocationInWindow(l);
-                int left = l[0];
-                int top = l[1];
-                int bottom = top + view.getHeight();
-                int right = left + view.getWidth();
-                if (event.getX() > left && event.getX() < right && event.getY() > top && event.getY() < bottom) {
-                    return false;
-                }
+            int[] l = {0, 0};
+            view.getLocationInWindow(l);
+            int left = l[0];
+            int top = l[1];
+            int bottom = top + view.getHeight();
+            int right = left + view.getWidth();
+            //判断触摸位置是否在保存的EditText上
+            if (event.getX() > left && event.getX() < right && event.getY() > top && event.getY() < bottom) {
+                return false;
             }
         }
         return true;

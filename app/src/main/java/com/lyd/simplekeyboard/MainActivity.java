@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import com.lyd.keyboard.KeyboardAdapter;
 import com.lyd.keyboard.KeyboardManage;
@@ -22,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         KeyboardAdapter adapter = new NumberKeyboardAdapter(this);
-        mManage = new KeyboardManage(MainActivity.this, adapter);
+        mManage = new KeyboardManage((FrameLayout) getWindow().getDecorView(), adapter);
         mManage.add((EditText) findViewById(R.id.text1));
         mManage.add((EditText) findViewById(R.id.text2));
         findViewById(R.id.key).setOnClickListener(new View.OnClickListener() {
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Log.e("lyd"," MainActivity "+getWindow().getDecorView());
+        Log.e("lyd", " MainActivity " + getWindow().getDecorView());
     }
 
     @Override

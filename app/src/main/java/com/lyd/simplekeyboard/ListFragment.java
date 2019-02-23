@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import com.lyd.keyboard.KeyboardAdapter;
 import com.lyd.keyboard.KeyboardManage;
@@ -46,7 +47,7 @@ public class ListFragment extends Fragment {
 
         public ListAdapter(Activity activity) {
             keyboardAdapter = new NumberKeyboardAdapter(activity);
-            keyboardManage = new KeyboardManage(activity, keyboardAdapter);
+            keyboardManage = new KeyboardManage((FrameLayout) activity.getWindow().getDecorView(), keyboardAdapter);
         }
 
         @NonNull

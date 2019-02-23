@@ -26,7 +26,7 @@ public class NumberKeyboardAdapter extends KeyboardAdapter {
     }
 
     @Override
-    public void onClickKeyBoard(EditText view, int primaryCode, int[] keyCodes) {
+    public void click(EditText view, int primaryCode, int[] keyCodes) {
         switch (primaryCode) {
             case -1:
                 Log.e("lyd"," 点 ");
@@ -45,7 +45,7 @@ public class NumberKeyboardAdapter extends KeyboardAdapter {
                 Log.e("lyd"," 删除 ");
                 break;
             default:
-                super.onClickKeyBoard(view, primaryCode, keyCodes);
+                super.click(view, primaryCode, keyCodes);
         }
     }
 }
