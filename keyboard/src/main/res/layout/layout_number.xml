@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <com.lyd.keyboard.SimpleKeyboardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:background="@color/white"
+        android:keyBackground="@color/white"
+        android:shadowRadius="0"
+        android:keyTextSize="20dp"
+        android:keyPreviewLayout="@null"
+        android:keyTextColor="@color/blackText"/>
+
+</LinearLayout>
