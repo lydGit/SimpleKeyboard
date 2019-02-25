@@ -5,6 +5,8 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
@@ -51,11 +53,66 @@ public class KeyboardManage implements IManage {
      */
     private int mKeyboardType = UNLOADED;
 
+    private OnKeboardHideListener onKeboardHideListener;
+
     public KeyboardManage(FrameLayout decorView, KeyboardAdapter adapter) {
         this.mDecorView = decorView;
         this.mAdapter = adapter;
         this.mTextList = new ArrayList<>();
         adapter.setKeyboardManage(this);
+    }
+
+    /**
+     * 获取该布局下所有EditText控件
+     *
+     * @param viewGroup
+     * @return
+     */
+    private List<EditText> getEditList(ViewGroup viewGroup) {
+        List<EditText> list = new ArrayList<>();
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View view = viewGroup.getChildAt(i);
+            if (view instanceof EditText) {
+                list.add((EditText) view);
+                continue;
+            }
+            if (view instanceof ViewGroup) {
+                list.addAll(getEditList((ViewGroup) view));
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 判断是否点击键盘的位置
+     *
+     * @param ev
+     * @return
+     */
+    private boolean isTouchKeyboard(MotionEvent ev) {
+        int[] vLocation = new int[2];
+        mAdapter.getLayoutView().getLocationOnScreen(vLocation);
+        if (ev.getY() >= vLocation[1]) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param editText
+     */
+    private void addView(EditText editText) {
+        if (mTextList.contains(editText)) {
+            mTextList.remove(editText);
+        }
+        mTextList.add(editText);
+    }
+
+    private void displayAnimation(int y ){
+        TranslateAnimation animation = new TranslateAnimation(0,0,0,y);
+        animation.setInterpolator(new LinearInterpolator());
+        animation.setDuration(1000);
+        mDecorView.setAnimation(animation);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -72,15 +129,10 @@ public class KeyboardManage implements IManage {
     }
 
     /**
+     * 显示键盘
+     *
      * @param editText
      */
-    private void addView(EditText editText) {
-        if (mTextList.contains(editText)) {
-            mTextList.remove(editText);
-        }
-        mTextList.add(editText);
-    }
-
     public void display(EditText editText) {
         //隐藏系统键盘
         HideKeyboardUtils.hideSystemKeyBoard(editText);
@@ -94,6 +146,18 @@ public class KeyboardManage implements IManage {
         mAdapter.setActionText(editText);
         mAdapter.getLayoutView().setVisibility(View.VISIBLE);
         scrollY(editText);
+    }
+
+    /**
+     * 隐藏键盘
+     */
+    public void hide() {
+        mKeyboardType = HIDE;
+        mDecorView.getChildAt(0).scrollTo(0, 0);
+        mAdapter.getLayoutView().setVisibility(View.GONE);
+        if (onKeboardHideListener != null) {
+            onKeboardHideListener.onHide();
+        }
     }
 
     public void dispatchTouchEvent(MotionEvent ev) {
@@ -140,48 +204,6 @@ public class KeyboardManage implements IManage {
         }
     }
 
-    /**
-     * 获取该布局下所有EditText控件
-     *
-     * @param viewGroup
-     * @return
-     */
-    private List<EditText> getEditList(ViewGroup viewGroup) {
-        List<EditText> list = new ArrayList<>();
-        for (int i = 0; i < viewGroup.getChildCount(); i++) {
-            View view = viewGroup.getChildAt(i);
-            if (view instanceof EditText) {
-                list.add((EditText) view);
-                continue;
-            }
-            if (view instanceof ViewGroup) {
-                list.addAll(getEditList((ViewGroup) view));
-            }
-        }
-        return list;
-    }
-
-    /**
-     * 判断是否点击键盘的位置
-     *
-     * @param ev
-     * @return
-     */
-    private boolean isTouchKeyboard(MotionEvent ev) {
-        int[] vLocation = new int[2];
-        mAdapter.getLayoutView().getLocationOnScreen(vLocation);
-        if (ev.getY() >= vLocation[1]) {
-            return true;
-        }
-        return false;
-    }
-
-    public void hide() {
-        mKeyboardType = HIDE;
-        mDecorView.getChildAt(0).scrollTo(0, 0);
-        mAdapter.getLayoutView().setVisibility(View.GONE);
-    }
-
     @Override
     public void scrollY(View view) {
         int[] vLocation = new int[2];
@@ -204,4 +226,7 @@ public class KeyboardManage implements IManage {
         }
     }
 
+    public void setOnKeboardHideListener(OnKeboardHideListener onKeboardHideListener) {
+        this.onKeboardHideListener = onKeboardHideListener;
+    }
 }

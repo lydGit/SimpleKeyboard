@@ -2,7 +2,6 @@ package com.lyd.keyboard;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.inputmethodservice.Keyboard;
 import android.text.Editable;
 import android.view.LayoutInflater;
@@ -82,7 +81,7 @@ public abstract class KeyboardAdapter implements IKeyboard {
         checkKeyboardView((ViewGroup) mLayoutView);
         Keyboard keyboard = new Keyboard(mContext, getKeyboardRes());
         mKeyboardView.setKeyboard(keyboard);
-        mKeyboardView.setOnDrawKeboardListener(new OnDrawKeboardListener() {
+        mKeyboardView.setOnDrawKeboardListener(new OnKeboardDrawListener() {
             @Override
             public void onDraw(int keyCode, Keyboard.Key key, Canvas canvas) {
                 draw(keyCode, key, canvas);

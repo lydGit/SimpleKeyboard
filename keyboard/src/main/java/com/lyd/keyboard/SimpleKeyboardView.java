@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class SimpleKeyboardView extends KeyboardView {
 
-    OnDrawKeboardListener onDrawKeboardListener;
+    OnKeboardDrawListener onDrawKeboardListener;
 
     public SimpleKeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -47,7 +47,7 @@ public class SimpleKeyboardView extends KeyboardView {
         }
     }
 
-    public void setOnDrawKeboardListener(OnDrawKeboardListener onDrawKeboardListener) {
+    public void setOnDrawKeboardListener(OnKeboardDrawListener onDrawKeboardListener) {
         this.onDrawKeboardListener = onDrawKeboardListener;
     }
 }
