@@ -7,5 +7,5 @@ package com.lyd.keyboard;
  */
 public interface OnKeboardHideListener {
 
-    void onaHide();
+    void onHide();
 }
