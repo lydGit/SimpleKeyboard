@@ -1,6 +1,8 @@
 package com.lyd.keyboard;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.inputmethodservice.Keyboard;
 import android.text.Editable;
 import android.view.LayoutInflater;
@@ -37,12 +39,14 @@ public abstract class KeyboardAdapter implements IKeyboard {
 
     /**
      * 获取布局资源
+     *
      * @return
      */
     public abstract int getLayoutRes();
 
     /**
      * 获取键盘资源
+     *
      * @return
      */
     public abstract int getKeyboardRes();
@@ -59,16 +63,7 @@ public abstract class KeyboardAdapter implements IKeyboard {
     public View getLayoutView() {
         if (mLayoutView == null) {
             mLayoutView = LayoutInflater.from(mContext).inflate(getLayoutRes(), null);
-            //查找布局中的软键盘，并获取
-            checkKeyboardView((ViewGroup) mLayoutView);
-            Keyboard keyboard = new Keyboard(mContext, getKeyboardRes());
-            mKeyboardView.setKeyboard(keyboard);
-            mKeyboardView.setOnKeyboardActionListener(new OnKeyboardActionListener() {
-                @Override
-                public void onKey(int primaryCode, int[] keyCodes) {
-                    click(mActionText, primaryCode, keyCodes);
-                }
-            });
+            initKeyboardView();
             mLayoutView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
@@ -77,6 +72,28 @@ public abstract class KeyboardAdapter implements IKeyboard {
             });
         }
         return mLayoutView;
+    }
+
+    /**
+     * 初始化软件盘控件
+     */
+    private void initKeyboardView() {
+        //查找布局中的软键盘，并获取
+        checkKeyboardView((ViewGroup) mLayoutView);
+        Keyboard keyboard = new Keyboard(mContext, getKeyboardRes());
+        mKeyboardView.setKeyboard(keyboard);
+        mKeyboardView.setOnDrawKeboardListener(new OnDrawKeboardListener() {
+            @Override
+            public void onDraw(int keyCode, Keyboard.Key key, Canvas canvas) {
+                draw(keyCode, key, canvas);
+            }
+        });
+        mKeyboardView.setOnKeyboardActionListener(new OnKeyboardActionListener() {
+            @Override
+            public void onKey(int primaryCode, int[] keyCodes) {
+                click(mActionText, primaryCode, keyCodes);
+            }
+        });
     }
 
     public void setActionText(EditText actionText) {
@@ -110,6 +127,11 @@ public abstract class KeyboardAdapter implements IKeyboard {
             }
         }
         return false;
+    }
+
+    @Override
+    public void draw(int keyCode, Keyboard.Key key, Canvas canvas) {
+
     }
 
     @Override
@@ -149,11 +171,11 @@ public abstract class KeyboardAdapter implements IKeyboard {
         }
     }
 
-    public void change(EditText editText){
+    public void change(EditText editText) {
         mManage.change(editText);
     }
 
-    public void hide(){
+    public void hide() {
         mManage.hide();
     }
 }

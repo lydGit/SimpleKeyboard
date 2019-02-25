@@ -1,5 +1,7 @@
 package com.lyd.keyboard;
 
+import android.graphics.Canvas;
+import android.inputmethodservice.Keyboard;
 import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -24,6 +26,15 @@ public interface IKeyboard {
      * @param editText
      */
     void setActionText(EditText editText);
+
+    /**
+     * 键盘绘制事件，覆盖绘制
+     *
+     * @param keyCode
+     * @param key
+     * @param canvas
+     */
+    void draw(int keyCode, Keyboard.Key key, Canvas canvas);
 
     /**
      * 点击键盘触发的事件
@@ -55,4 +66,5 @@ public interface IKeyboard {
      * @param editText
      */
     void change(EditText editText);
+
 }

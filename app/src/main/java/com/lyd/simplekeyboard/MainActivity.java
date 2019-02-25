@@ -33,8 +33,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-        Log.e("lyd", " MainActivity " + getWindow().getDecorView());
     }
 
     @Override
