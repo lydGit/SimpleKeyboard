@@ -99,6 +99,10 @@ public abstract class KeyboardAdapter implements IKeyboard {
         this.mActionText = actionText;
     }
 
+    public EditText getActionText() {
+        return mActionText;
+    }
+
     public void setKeyboardManage(IManage manage) {
         this.mManage = manage;
     }

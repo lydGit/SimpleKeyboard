@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -12,16 +13,14 @@ import android.widget.EditText;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author lyd
  * @date 2019/2/15 0015 10:37
  * @desription
  */
-public class HideKeyboardUtils {
+public class KeyboardUtils {
 
     //隐藏系统键盘关键代码
     public static void hideSystemKeyBoard(EditText edit) {
@@ -58,39 +57,37 @@ public class HideKeyboardUtils {
     }
 
     /**
-     * 判断是否应该隐藏键盘
+     * 判断触摸位置是否在指定view上面
      *
-     * @param event
-     * @return
+     * @return true：在 false：不在
      */
-    public static boolean isShouldHideKeyboard(List<EditText> textList, MotionEvent event) {
+    public static boolean isTouchOnView(List<View> textList, float touchX, float touchY) {
         for (View view : textList) {
-            int[] l = {0, 0};
-            view.getLocationInWindow(l);
-            int left = l[0];
-            int top = l[1];
-            int bottom = top + view.getHeight();
-            int right = left + view.getWidth();
-            //判断触摸位置是否在保存的EditText上
-            if (event.getX() > left && event.getX() < right && event.getY() > top && event.getY() < bottom) {
-                return false;
+            boolean b = isTouchOnView(view, touchX, touchY);
+            if (true) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**
-     * 动态隐藏软键盘
+     * 判断触摸位置是否在指定view上面
      *
-     * @param activity activity
+     * @return true：在 false：不在
      */
-    public static void hideSoftInput(Activity activity) {
-        View view = activity.getWindow().peekDecorView();
-        if (view != null) {
-            InputMethodManager inputmanger = (InputMethodManager) activity
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputmanger.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    public static boolean isTouchOnView(View view, float touchX, float touchY) {
+        int[] l = {0, 0};
+        view.getLocationInWindow(l);
+        int left = l[0];
+        int top = l[1];
+        int bottom = top + view.getHeight();
+        int right = left + view.getWidth();
+        //判断触摸位置是否在保存的EditText上
+        if (touchX > left && touchX < right && touchY + top > top && touchY + top < bottom) {
+            return false;
         }
+        return true;
     }
 
     /**

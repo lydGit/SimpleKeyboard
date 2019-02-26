@@ -1,12 +1,11 @@
 package com.lyd.keyboard;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
@@ -108,21 +107,24 @@ public class KeyboardManage implements IManage {
         mTextList.add(editText);
     }
 
-    private void displayAnimation(int y) {
-        TranslateAnimation animation = new TranslateAnimation(0, 0, 0, y);
-        animation.setInterpolator(new LinearInterpolator());
-        animation.setDuration(1000);
-        mDecorView.setAnimation(animation);
-    }
-
     @SuppressLint("ClickableViewAccessibility")
     public void add(final EditText editText) {
         addView(editText);
         //触摸事件触发键盘显示
+        editText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                display(editText);
+            }
+        });
         editText.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                display(editText);
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (KeyboardUtils.isTouchOnView(editText, event.getRawX(), event.getRawY())) {
+                       display(editText);
+                    }
+                }
                 return false;
             }
         });
@@ -135,7 +137,7 @@ public class KeyboardManage implements IManage {
      */
     public void display(EditText editText) {
         //隐藏系统键盘
-        HideKeyboardUtils.hideSystemKeyBoard(editText);
+        KeyboardUtils.hideSystemKeyBoard(editText);
         //添加键盘控件进界面布局中
         if (UNLOADED == mKeyboardType) {
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -170,7 +172,7 @@ public class KeyboardManage implements IManage {
             return;
         }
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (HideKeyboardUtils.isShouldHideKeyboard(mTextList, ev)) {
+            if (!KeyboardUtils.isTouchOnView(mAdapter.getActionText(), ev.getX(), ev.getY())) {
                 hide();
             }
         }
@@ -216,7 +218,7 @@ public class KeyboardManage implements IManage {
         //EditText底部坐标
         int bottomY = vLocation[1] + view.getHeight();
         // 获取屏幕的高度
-        int screenHeight = HideKeyboardUtils.getWindowHeight(mDecorView.getContext());
+        int screenHeight = KeyboardUtils.getWindowHeight(mDecorView.getContext());
         //屏幕与EditText底部坐标差距
         int distance = screenHeight - bottomY;
         //EditText没有超出界面显示
