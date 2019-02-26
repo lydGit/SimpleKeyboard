@@ -108,8 +108,8 @@ public class KeyboardManage implements IManage {
         mTextList.add(editText);
     }
 
-    private void displayAnimation(int y ){
-        TranslateAnimation animation = new TranslateAnimation(0,0,0,y);
+    private void displayAnimation(int y) {
+        TranslateAnimation animation = new TranslateAnimation(0, 0, 0, y);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(1000);
         mDecorView.setAnimation(animation);
@@ -202,6 +202,11 @@ public class KeyboardManage implements IManage {
         } else {
             hide();
         }
+    }
+
+    @Override
+    public KeyboardAdapter getAdapter() {
+        return mAdapter;
     }
 
     @Override

@@ -34,4 +34,9 @@ public interface IManage {
      */
     void change(EditText editText);
 
+    /**
+     * 获取adapter
+     * @return
+     */
+    KeyboardAdapter getAdapter();
 }
