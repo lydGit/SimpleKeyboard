@@ -15,6 +15,11 @@ import android.widget.TextView;
 
 import com.lyd.keyboard.KeyboardAdapter;
 import com.lyd.keyboard.KeyboardManage;
+import com.lyd.keyboard.OnEditCompleteListener;
+import com.lyd.keyboard.OnKeboardHideListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lyd
@@ -26,7 +31,9 @@ public class ListFragment extends Fragment {
     private KeyboardManage keyboardManage;
     private RecyclerView recyclerView;
 
-    private KeyboardAdapter keyboardAdapter;
+    private NumberKeyboardAdapter keyboardAdapter;
+
+    private List<String> list;
 
     @Nullable
     @Override
@@ -37,18 +44,31 @@ public class ListFragment extends Fragment {
     }
 
     private void initView(View view) {
+        list = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            list.add("position " + i);
+        }
         recyclerView = view.findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        ListAdapter listAdapter = new ListAdapter();
+        final ListAdapter listAdapter = new ListAdapter();
         recyclerView.setAdapter(listAdapter);
         keyboardAdapter = new NumberKeyboardAdapter(getContext());
         keyboardManage = new KeyboardManage((FrameLayout) getActivity().getWindow().getDecorView(), keyboardAdapter);
+        keyboardAdapter.setOnEditCompleteListener(new OnEditCompleteListener() {
+            @Override
+            public void onComplete() {
+                int position = (int) keyboardAdapter.getActionText().getTag();
+                list.set(position,keyboardAdapter.getActionText().getText().toString());
+                listAdapter.notifyItemChanged(position);
+            }
+        });
     }
 
 
     class ListAdapter extends RecyclerView.Adapter<ListHolder> {
 
         public ListAdapter() {
+
         }
 
         @NonNull
@@ -59,19 +79,22 @@ public class ListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull final ListHolder viewHolder, int i) {
-            viewHolder.editText.setHint("position" + i);
+            viewHolder.editText.setText(list.get(i));
+            viewHolder.editText.setTag(i);
             keyboardManage.add(viewHolder.editText);
             viewHolder.textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    keyboardManage.display(viewHolder.editText);
+//                    keyboardManage.display(viewHolder.editText);
                 }
             });
+            final int position = i;
+
         }
 
         @Override
         public int getItemCount() {
-            return 50;
+            return list.size();
         }
     }
 

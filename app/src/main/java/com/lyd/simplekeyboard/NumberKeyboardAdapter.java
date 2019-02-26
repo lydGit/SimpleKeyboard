@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.EditText;
 
 import com.lyd.keyboard.KeyboardAdapter;
+import com.lyd.keyboard.OnEditCompleteListener;
 
 /**
  * @author lyd
@@ -37,6 +38,7 @@ public class NumberKeyboardAdapter extends KeyboardAdapter {
                 hide();
                 break;
             case -3:
+                complete();
                 change(view);
                 break;
             case -4:

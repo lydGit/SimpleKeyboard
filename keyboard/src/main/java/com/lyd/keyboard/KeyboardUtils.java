@@ -1,12 +1,9 @@
 package com.lyd.keyboard;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -64,7 +61,7 @@ public class KeyboardUtils {
     public static boolean isTouchOnView(List<View> textList, float touchX, float touchY) {
         for (View view : textList) {
             boolean b = isTouchOnView(view, touchX, touchY);
-            if (true) {
+            if (b) {
                 return true;
             }
         }
@@ -84,10 +81,10 @@ public class KeyboardUtils {
         int bottom = top + view.getHeight();
         int right = left + view.getWidth();
         //判断触摸位置是否在保存的EditText上
-        if (touchX > left && touchX < right && touchY + top > top && touchY + top < bottom) {
-            return false;
+        if (touchX > left && touchX < right && touchY > top && touchY < bottom) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**

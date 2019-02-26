@@ -1,7 +1,6 @@
 package com.lyd.keyboard;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,7 +39,7 @@ public class KeyboardManage implements IManage {
     /**
      * EditText的观察列表，(用于判断点击界面的时候是否要隐藏键盘)
      */
-    private List<EditText> mTextList;
+    private List<View> mTextList;
 
     /**
      * 键盘适配器
@@ -53,6 +52,16 @@ public class KeyboardManage implements IManage {
     private int mKeyboardType = UNLOADED;
 
     private OnKeboardHideListener onKeboardHideListener;
+
+    /**
+     * 记录屏幕触摸的位置，手指在界面上滑动时隐藏输入法
+     */
+    private float moveX, moveY;
+
+    /**
+     * 滑动的最大距离，超出这距离就视为滑动了屏幕
+     */
+    private final static float MOVE_MAX = 50;
 
     public KeyboardManage(FrameLayout decorView, KeyboardAdapter adapter) {
         this.mDecorView = decorView;
@@ -122,7 +131,7 @@ public class KeyboardManage implements IManage {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (KeyboardUtils.isTouchOnView(editText, event.getRawX(), event.getRawY())) {
-                       display(editText);
+                        display(editText);
                     }
                 }
                 return false;
@@ -157,6 +166,8 @@ public class KeyboardManage implements IManage {
         mKeyboardType = HIDE;
         mDecorView.getChildAt(0).scrollTo(0, 0);
         mAdapter.getLayoutView().setVisibility(View.GONE);
+        //隐藏键盘视为完成输入
+        mAdapter.complete();
         if (onKeboardHideListener != null) {
             onKeboardHideListener.onHide();
         }
@@ -172,7 +183,18 @@ public class KeyboardManage implements IManage {
             return;
         }
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (!KeyboardUtils.isTouchOnView(mAdapter.getActionText(), ev.getX(), ev.getY())) {
+            moveX = ev.getRawX();
+            moveY = ev.getY();
+        }
+        if (ev.getAction() == MotionEvent.ACTION_UP) {
+            //判断是否滑动了界面，手指在界面上滑动时隐藏输入法
+            if (Math.abs(ev.getRawX() - moveX) > MOVE_MAX || Math.abs(ev.getRawY() - moveY) > MOVE_MAX) {
+                hide();
+                return;
+            }
+        }
+        if (ev.getAction() == MotionEvent.ACTION_UP) {
+            if (!KeyboardUtils.isTouchOnView(mTextList, ev.getRawX(), ev.getRawY())) {
                 hide();
             }
         }

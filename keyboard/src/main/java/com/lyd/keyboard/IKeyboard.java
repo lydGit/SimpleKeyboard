@@ -67,4 +67,9 @@ public interface IKeyboard {
      */
     void change(EditText editText);
 
+    /**
+     * 输入完成
+     */
+    void complete();
+
 }

@@ -50,6 +50,11 @@ public abstract class KeyboardAdapter implements IKeyboard {
      */
     public abstract int getKeyboardRes();
 
+    /**
+     * 输入完成监听
+     */
+    private OnEditCompleteListener onEditCompleteListener;
+
     public KeyboardAdapter(Context context) {
         this.mContext = context;
     }
@@ -178,7 +183,18 @@ public abstract class KeyboardAdapter implements IKeyboard {
         mManage.change(editText);
     }
 
+    @Override
+    public void complete() {
+        if (onEditCompleteListener != null) {
+            onEditCompleteListener.onComplete();
+        }
+    }
+
     public void hide() {
         mManage.hide();
+    }
+
+    public void setOnEditCompleteListener(OnEditCompleteListener onEditCompleteListener) {
+        this.onEditCompleteListener = onEditCompleteListener;
     }
 }
