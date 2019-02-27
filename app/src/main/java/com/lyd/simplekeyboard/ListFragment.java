@@ -12,11 +12,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-
-import com.lyd.keyboard.KeyboardAdapter;
 import com.lyd.keyboard.KeyboardManage;
 import com.lyd.keyboard.OnEditCompleteListener;
-import com.lyd.keyboard.OnKeboardHideListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +53,7 @@ public class ListFragment extends Fragment {
         keyboardManage = new KeyboardManage((FrameLayout) getActivity().getWindow().getDecorView(), keyboardAdapter);
         keyboardAdapter.setOnEditCompleteListener(new OnEditCompleteListener() {
             @Override
-            public void onComplete() {
+            public void onComplete(EditText editText) {
                 int position = (int) keyboardAdapter.getActionText().getTag();
                 list.set(position,keyboardAdapter.getActionText().getText().toString());
                 listAdapter.notifyItemChanged(position);

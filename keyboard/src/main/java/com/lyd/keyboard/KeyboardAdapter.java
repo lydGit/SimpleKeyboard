@@ -186,7 +186,7 @@ public abstract class KeyboardAdapter implements IKeyboard {
     @Override
     public void complete() {
         if (onEditCompleteListener != null) {
-            onEditCompleteListener.onComplete();
+            onEditCompleteListener.onComplete(getActionText());
         }
     }
 

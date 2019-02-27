@@ -51,7 +51,9 @@ public class KeyboardManage implements IManage {
      */
     private int mKeyboardType = UNLOADED;
 
-    private OnKeboardHideListener onKeboardHideListener;
+    private OnKeyboardHideListener onKeyboardHideListener;
+
+    private OnKeyboardDisplayListener onKeyboardDisplayListener;
 
     /**
      * 记录屏幕触摸的位置，手指在界面上滑动时隐藏输入法
@@ -157,6 +159,9 @@ public class KeyboardManage implements IManage {
         mAdapter.setActionText(editText);
         mAdapter.getLayoutView().setVisibility(View.VISIBLE);
         scrollY(editText);
+        if (onKeyboardDisplayListener != null) {
+            onKeyboardDisplayListener.onDisplay(editText);
+        }
     }
 
     /**
@@ -168,8 +173,8 @@ public class KeyboardManage implements IManage {
         mAdapter.getLayoutView().setVisibility(View.GONE);
         //隐藏键盘视为完成输入
         mAdapter.complete();
-        if (onKeboardHideListener != null) {
-            onKeboardHideListener.onHide();
+        if (onKeyboardHideListener != null) {
+            onKeyboardHideListener.onHide(getAdapter().getActionText());
         }
     }
 
@@ -255,7 +260,11 @@ public class KeyboardManage implements IManage {
         }
     }
 
-    public void setOnKeboardHideListener(OnKeboardHideListener onKeboardHideListener) {
-        this.onKeboardHideListener = onKeboardHideListener;
+    public void setOnKeyboardHideListener(OnKeyboardHideListener onKeyboardHideListener) {
+        this.onKeyboardHideListener = onKeyboardHideListener;
+    }
+
+    public void setOnKeyboardDisplayListener(OnKeyboardDisplayListener onKeyboardDisplayListener) {
+        this.onKeyboardDisplayListener = onKeyboardDisplayListener;
     }
 }

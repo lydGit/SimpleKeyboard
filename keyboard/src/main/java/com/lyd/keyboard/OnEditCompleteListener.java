@@ -1,5 +1,7 @@
 package com.lyd.keyboard;
 
+import android.widget.EditText;
+
 /**
  * @author lyd
  * @date 2019/2/26 18:47
@@ -7,6 +9,6 @@ package com.lyd.keyboard;
  */
 public interface OnEditCompleteListener {
 
-    void onComplete();
+    void onComplete(EditText editText);
 
 }
