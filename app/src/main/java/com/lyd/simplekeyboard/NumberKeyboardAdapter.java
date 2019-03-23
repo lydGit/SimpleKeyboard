@@ -2,6 +2,7 @@ package com.lyd.simplekeyboard;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.EditText;
 
 import com.lyd.keyboard.KeyboardAdapter;
@@ -24,8 +25,13 @@ public class NumberKeyboardAdapter extends KeyboardAdapter {
     }
 
     @Override
-    public int getKeyboardRes() {
+    public int getKeyboardXml() {
         return com.lyd.keyboard.R.xml.keyboard_num;
+    }
+
+    @Override
+    public int getKeyboardId() {
+        return R.id.skv_key;
     }
 
     @Override

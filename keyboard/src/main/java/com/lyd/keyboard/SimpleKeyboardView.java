@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.util.AttributeSet;
-
 import java.util.List;
 
 /**
@@ -50,4 +49,9 @@ public class SimpleKeyboardView extends KeyboardView {
     public void setOnDrawKeboardListener(OnKeboardDrawListener onDrawKeboardListener) {
         this.onDrawKeboardListener = onDrawKeboardListener;
     }
+
+//    @Override
+//    public boolean dispatchTouchEvent(MotionEvent event) {
+//        return false;
+//    }
 }

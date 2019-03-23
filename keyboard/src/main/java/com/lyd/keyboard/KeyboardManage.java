@@ -1,12 +1,25 @@
 package com.lyd.keyboard;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.OnLifecycleEvent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +29,7 @@ import java.util.List;
  * @date 2019/2/14 13:40
  * @desription 方便SimpleKeyboardView使用的工具类
  */
-public class KeyboardManage implements IManage {
+public class KeyboardManage implements IManage, LifecycleObserver {
 
     /**
      * 键盘状态：未加载
@@ -32,6 +45,11 @@ public class KeyboardManage implements IManage {
     private static final int HIDE = 2;
 
     /**
+     * 输入完成
+     */
+    public static final int STATUS_END = 1001;
+
+    /**
      * 界面的底层布局
      */
     private FrameLayout mDecorView;
@@ -39,7 +57,7 @@ public class KeyboardManage implements IManage {
     /**
      * EditText的观察列表，(用于判断点击界面的时候是否要隐藏键盘)
      */
-    private List<View> mTextList;
+    private List<EditText> mTextList;
 
     /**
      * 键盘适配器
@@ -65,12 +83,48 @@ public class KeyboardManage implements IManage {
      */
     private final static float MOVE_MAX = 50;
 
-    public KeyboardManage(FrameLayout decorView, KeyboardAdapter adapter) {
-        this.mDecorView = decorView;
+    private Context mContext;
+
+    private KeyboardHideBroadcast mBroadcast;
+
+    public KeyboardManage(FrameLayout layout, KeyboardAdapter adapter) {
+        this.mDecorView = layout;
         this.mAdapter = adapter;
         this.mTextList = new ArrayList<>();
-        adapter.setKeyboardManage(this);
+        mAdapter.setKeyboardManage(this);
+        mDecorView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.e("lyd"," touch "+event.getY());
+                dispatchTouchEvent(event);
+                return false;
+            }
+        });
+        if(mDecorView instanceof IKeyLayout){
+            ((IKeyLayout) mDecorView).setOnKeyLayoutTouchListener(new OnKeyLayoutTouchListener() {
+                @Override
+                public void onTouch(MotionEvent ev) {
+                    dispatchTouchEvent(ev);
+                }
+            });
+        }
     }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    void onCreate() {
+        mBroadcast = new KeyboardHideBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.lyd.keyboard.KeyboardManage.hide");
+        //当网络发生变化的时候，系统广播会发出值为android.net.conn.CONNECTIVITY_CHANGE这样的一条广播
+        mContext.registerReceiver(mBroadcast,intentFilter);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    void onDestroy() {
+        mContext = null;
+        mContext.unregisterReceiver(mBroadcast);
+    }
+
 
     /**
      * 获取该布局下所有EditText控件
@@ -118,16 +172,27 @@ public class KeyboardManage implements IManage {
         mTextList.add(editText);
     }
 
+    /**
+     * 返回持有焦点的editText
+     *
+     * @return
+     */
+    public EditText getFocusView() {
+        if (mTextList == null) {
+            return null;
+        }
+        for (EditText view : mTextList) {
+            if (view.isFocused()) {
+                return view;
+            }
+        }
+        return null;
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     public void add(final EditText editText) {
         addView(editText);
         //触摸事件触发键盘显示
-        editText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                display(editText);
-            }
-        });
         editText.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -156,7 +221,6 @@ public class KeyboardManage implements IManage {
             mDecorView.addView(mAdapter.getLayoutView(), layoutParams);
         }
         mKeyboardType = DISPLAY;
-        mAdapter.setActionText(editText);
         mAdapter.getLayoutView().setVisibility(View.VISIBLE);
         scrollY(editText);
         if (onKeyboardDisplayListener != null) {
@@ -174,7 +238,7 @@ public class KeyboardManage implements IManage {
         //隐藏键盘视为完成输入
         mAdapter.complete();
         if (onKeyboardHideListener != null) {
-            onKeyboardHideListener.onHide(getAdapter().getActionText());
+            onKeyboardHideListener.onHide();
         }
     }
 
@@ -224,7 +288,6 @@ public class KeyboardManage implements IManage {
         focusView.requestFocus();
         //判断该控件是否加入观察列表中
         if (mTextList.contains(focusView)) {
-            mAdapter.setActionText(focusView);
             //必须先让布局恢复原位，否则位置显示不正确
             mDecorView.getChildAt(0).scrollTo(0, 0);
             scrollY(focusView);
@@ -248,11 +311,12 @@ public class KeyboardManage implements IManage {
         int screenHeight = KeyboardUtils.getWindowHeight(mDecorView.getContext());
         //屏幕与EditText底部坐标差距
         int distance = screenHeight - bottomY;
+        int viewHeight = KeyboardUtils.getViewHeight(mAdapter.getLayoutView());
         //EditText没有超出界面显示
         if (bottomY <= screenHeight) {
             //判断键盘弹出来的时候，是否把EditText给挡住
-            if ((screenHeight - mAdapter.getLayoutView().getHeight()) < bottomY) {
-                mDecorView.getChildAt(0).scrollTo(0, mAdapter.getLayoutView().getHeight() - distance);
+            if ((screenHeight - viewHeight) < bottomY) {
+                mDecorView.getChildAt(0).scrollTo(0, viewHeight - distance);
             }
         } else {
             //控件高度大于屏幕高度的情况一般只会出现在可以滚动的控件中，我们只需要上移一个键盘高度既可以
@@ -266,5 +330,12 @@ public class KeyboardManage implements IManage {
 
     public void setOnKeyboardDisplayListener(OnKeyboardDisplayListener onKeyboardDisplayListener) {
         this.onKeyboardDisplayListener = onKeyboardDisplayListener;
+    }
+
+    public class KeyboardHideBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            hide();
+        }
     }
 }

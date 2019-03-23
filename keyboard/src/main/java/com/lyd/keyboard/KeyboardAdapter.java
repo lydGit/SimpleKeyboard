@@ -4,10 +4,9 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.inputmethodservice.Keyboard;
 import android.text.Editable;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 
 /**
@@ -26,15 +25,7 @@ public abstract class KeyboardAdapter implements IKeyboard {
 
     private SimpleKeyboardView mKeyboardView;
 
-    /**
-     * 当前持有焦点的EditText
-     */
-    private EditText mActionText;
-
-    /**
-     * 键盘管理类
-     */
-    private IManage mManage;
+    private KeyboardManage mManage;
 
     /**
      * 获取布局资源
@@ -44,16 +35,18 @@ public abstract class KeyboardAdapter implements IKeyboard {
     public abstract int getLayoutRes();
 
     /**
-     * 获取键盘资源
+     * 获取键盘资源Xml
      *
      * @return
      */
-    public abstract int getKeyboardRes();
+    public abstract int getKeyboardXml();
 
     /**
-     * 输入完成监听
+     * 获取键盘控件的id
+     *
+     * @return
      */
-    private OnEditCompleteListener onEditCompleteListener;
+    public abstract int getKeyboardId();
 
     public KeyboardAdapter(Context context) {
         this.mContext = context;
@@ -68,12 +61,6 @@ public abstract class KeyboardAdapter implements IKeyboard {
         if (mLayoutView == null) {
             mLayoutView = LayoutInflater.from(mContext).inflate(getLayoutRes(), null);
             initKeyboardView();
-            mLayoutView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return true;
-                }
-            });
         }
         return mLayoutView;
     }
@@ -82,59 +69,39 @@ public abstract class KeyboardAdapter implements IKeyboard {
      * 初始化软件盘控件
      */
     private void initKeyboardView() {
-        //查找布局中的软键盘，并获取
-        checkKeyboardView((ViewGroup) mLayoutView);
-        Keyboard keyboard = new Keyboard(mContext, getKeyboardRes());
+        mKeyboardView = mLayoutView.findViewById(getKeyboardId());
+        Keyboard keyboard = new Keyboard(mContext, getKeyboardXml());
         mKeyboardView.setKeyboard(keyboard);
+        //键盘绘制监听
         mKeyboardView.setOnDrawKeboardListener(new OnKeboardDrawListener() {
             @Override
             public void onDraw(int keyCode, Keyboard.Key key, Canvas canvas) {
                 draw(keyCode, key, canvas);
             }
         });
+        //键盘点击监听
         mKeyboardView.setOnKeyboardActionListener(new OnKeyboardActionListener() {
             @Override
             public void onKey(int primaryCode, int[] keyCodes) {
-                click(mActionText, primaryCode, keyCodes);
+                click(mManage.getFocusView(), primaryCode, keyCodes);
             }
         });
     }
 
-    public void setActionText(EditText actionText) {
-        this.mActionText = actionText;
-    }
-
-    public EditText getActionText() {
-        return mActionText;
-    }
-
-    public void setKeyboardManage(IManage manage) {
-        this.mManage = manage;
-    }
-
     /**
-     * 查找软键盘控件
-     *
-     * @param group
-     * @return true:找到软件盘控件
+     * 触发EditText中的点击事件
      */
-    private boolean checkKeyboardView(ViewGroup group) {
-        for (int i = 0; i < group.getChildCount(); i++) {
-            View childView = group.getChildAt(i);
-            //判断当前childView是否软键盘
-            if (childView instanceof SimpleKeyboardView) {
-                mKeyboardView = (SimpleKeyboardView) childView;
-                return true;
-            }
-            //判断当前childView是否为ViewGroup
-            if (childView instanceof ViewGroup) {
-                boolean b = checkKeyboardView((ViewGroup) childView);
-                if (b) {
-                    return true;
-                }
-            }
+    private void dispatchKeyDown(int code){
+        EditText editText = mManage.getFocusView();
+        if (editText != null) {
+            //触发EditText中的OnKeyListener
+            KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN,code);
+            editText.dispatchKeyEvent(event);
         }
-        return false;
+    }
+
+    public void setKeyboardManage(KeyboardManage mManage) {
+        this.mManage = mManage;
     }
 
     @Override
@@ -183,18 +150,12 @@ public abstract class KeyboardAdapter implements IKeyboard {
         mManage.change(editText);
     }
 
-    @Override
-    public void complete() {
-        if (onEditCompleteListener != null) {
-            onEditCompleteListener.onComplete(getActionText());
-        }
-    }
-
     public void hide() {
         mManage.hide();
     }
 
-    public void setOnEditCompleteListener(OnEditCompleteListener onEditCompleteListener) {
-        this.onEditCompleteListener = onEditCompleteListener;
+    @Override
+    public void complete() {
+        dispatchKeyDown(KeyboardManage.STATUS_END);
     }
 }

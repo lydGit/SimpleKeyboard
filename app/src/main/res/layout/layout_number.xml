@@ -5,6 +5,7 @@
     android:orientation="vertical">
 
     <com.lyd.keyboard.SimpleKeyboardView
+        android:id="@+id/skv_key"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true"

@@ -5,8 +5,10 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -58,7 +60,7 @@ public class KeyboardUtils {
      *
      * @return true：在 false：不在
      */
-    public static boolean isTouchOnView(List<View> textList, float touchX, float touchY) {
+    public static boolean isTouchOnView(List<EditText> textList, float touchX, float touchY) {
         for (View view : textList) {
             boolean b = isTouchOnView(view, touchX, touchY);
             if (b) {
@@ -99,5 +101,35 @@ public class KeyboardUtils {
         return dm.heightPixels;
     }
 
+    /**
+     * 获取View的高度
+     *
+     * @param view
+     * @return
+     */
+    public static int getViewHeight(View view) {
+        int h = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        view.measure(0, h);
+        return view.getMeasuredHeight();
+    }
+
+    /**
+     * 获取界面中的id为content的布局（找不到就寻找该view的父布局）
+     *
+     * @param view
+     * @return
+     */
+    public static View getDecorView(View view) {
+        if (view == null) {
+            return null;
+        }
+        if (view.getId() == android.R.id.content) {
+            return view;
+        }
+        if (view.getParent() == null) {
+            return null;
+        }
+        return getDecorView((View) view.getParent());
+    }
 
 }

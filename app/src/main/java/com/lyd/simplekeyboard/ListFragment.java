@@ -6,14 +6,16 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
 import com.lyd.keyboard.KeyboardManage;
-import com.lyd.keyboard.OnEditCompleteListener;
+import com.lyd.keyboard.OnKeyCompleteListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ public class ListFragment extends Fragment {
     private NumberKeyboardAdapter keyboardAdapter;
 
     private List<String> list;
+    private ListAdapter listAdapter;
 
     @Nullable
     @Override
@@ -47,20 +50,11 @@ public class ListFragment extends Fragment {
         }
         recyclerView = view.findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        final ListAdapter listAdapter = new ListAdapter();
+        listAdapter = new ListAdapter();
         recyclerView.setAdapter(listAdapter);
         keyboardAdapter = new NumberKeyboardAdapter(getContext());
-        keyboardManage = new KeyboardManage((FrameLayout) getActivity().getWindow().getDecorView(), keyboardAdapter);
-        keyboardAdapter.setOnEditCompleteListener(new OnEditCompleteListener() {
-            @Override
-            public void onComplete(EditText editText) {
-                int position = (int) keyboardAdapter.getActionText().getTag();
-                list.set(position,keyboardAdapter.getActionText().getText().toString());
-                listAdapter.notifyItemChanged(position);
-            }
-        });
+        keyboardManage = new KeyboardManage((FrameLayout) view.findViewById(R.id.flayout), keyboardAdapter);
     }
-
 
     class ListAdapter extends RecyclerView.Adapter<ListHolder> {
 
@@ -75,18 +69,16 @@ public class ListFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull final ListHolder viewHolder, int i) {
+        public void onBindViewHolder(@NonNull final ListHolder viewHolder, final int i) {
             viewHolder.editText.setText(list.get(i));
             viewHolder.editText.setTag(i);
             keyboardManage.add(viewHolder.editText);
-            viewHolder.textView.setOnClickListener(new View.OnClickListener() {
+            viewHolder.editText.setOnKeyListener(new OnKeyCompleteListener() {
                 @Override
-                public void onClick(View v) {
-//                    keyboardManage.display(viewHolder.editText);
+                public void onComplete(View view, int keyCode) {
+                    list.set(i,viewHolder.editText.getText().toString());
                 }
             });
-            final int position = i;
-
         }
 
         @Override

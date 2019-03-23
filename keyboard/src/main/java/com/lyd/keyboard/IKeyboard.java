@@ -21,13 +21,6 @@ public interface IKeyboard {
     View getLayoutView();
 
     /**
-     * 设置当前活动焦点的EditText
-     *
-     * @param editText
-     */
-    void setActionText(EditText editText);
-
-    /**
      * 键盘绘制事件，覆盖绘制
      *
      * @param keyCode
