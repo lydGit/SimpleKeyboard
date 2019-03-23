@@ -1,16 +1,9 @@
 package com.lyd.keyboard;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleObserver;
-import android.arch.lifecycle.LifecycleOwner;
-import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -18,9 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +19,7 @@ import java.util.List;
  * @date 2019/2/14 13:40
  * @desription 方便SimpleKeyboardView使用的工具类
  */
-public class KeyboardManage implements IManage, LifecycleObserver {
+public class KeyboardManage implements IManage {
 
     /**
      * 键盘状态：未加载
@@ -83,10 +73,6 @@ public class KeyboardManage implements IManage, LifecycleObserver {
      */
     private final static float MOVE_MAX = 50;
 
-    private Context mContext;
-
-    private KeyboardHideBroadcast mBroadcast;
-
     public KeyboardManage(FrameLayout layout, KeyboardAdapter adapter) {
         this.mDecorView = layout;
         this.mAdapter = adapter;
@@ -109,22 +95,6 @@ public class KeyboardManage implements IManage, LifecycleObserver {
             });
         }
     }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    void onCreate() {
-        mBroadcast = new KeyboardHideBroadcast();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.lyd.keyboard.KeyboardManage.hide");
-        //当网络发生变化的时候，系统广播会发出值为android.net.conn.CONNECTIVITY_CHANGE这样的一条广播
-        mContext.registerReceiver(mBroadcast,intentFilter);
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    void onDestroy() {
-        mContext = null;
-        mContext.unregisterReceiver(mBroadcast);
-    }
-
 
     /**
      * 获取该布局下所有EditText控件
