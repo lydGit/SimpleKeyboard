@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +48,14 @@ public class KeyboardManage implements IManage {
     /**
      * EditText的观察列表，(用于判断点击界面的时候是否要隐藏键盘)
      */
-    private List<EditText> mTextList;
+    private List<View> mEditList;
+
+    /**
+     * 触摸view列表
+     * 因为键盘默认点击键盘和输入框外其它位置是隐藏键盘的
+     * ，但使用中需要点击其它一些地方也不能关闭键盘，所以使用该列表保存这类view
+     */
+    private List<View> mTouchList;
 
     /**
      * 键盘适配器
@@ -76,17 +84,18 @@ public class KeyboardManage implements IManage {
     public KeyboardManage(FrameLayout layout, KeyboardAdapter adapter) {
         this.mDecorView = layout;
         this.mAdapter = adapter;
-        this.mTextList = new ArrayList<>();
+        this.mEditList = new ArrayList<>();
+        this.mTouchList = new ArrayList<>();
         mAdapter.setKeyboardManage(this);
         mDecorView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Log.e("lyd"," touch "+event.getY());
+                Log.e("lyd", " touch " + event.getY());
                 dispatchTouchEvent(event);
                 return false;
             }
         });
-        if(mDecorView instanceof IKeyLayout){
+        if (mDecorView instanceof IKeyLayout) {
             ((IKeyLayout) mDecorView).setOnKeyLayoutTouchListener(new OnKeyLayoutTouchListener() {
                 @Override
                 public void onTouch(MotionEvent ev) {
@@ -133,13 +142,20 @@ public class KeyboardManage implements IManage {
     }
 
     /**
-     * @param editText
+     * @param view
      */
-    private void addView(EditText editText) {
-        if (mTextList.contains(editText)) {
-            mTextList.remove(editText);
+    private void addView(EditText view) {
+        if (mEditList.contains(view)) {
+            mEditList.remove(view);
         }
-        mTextList.add(editText);
+        mEditList.add(view);
+    }
+
+    public void addTouchView(View view) {
+        if (mTouchList.contains(view)) {
+            mTouchList.remove(view);
+        }
+        mTouchList.add(view);
     }
 
     /**
@@ -148,27 +164,27 @@ public class KeyboardManage implements IManage {
      * @return
      */
     public EditText getFocusView() {
-        if (mTextList == null) {
+        if (mEditList == null) {
             return null;
         }
-        for (EditText view : mTextList) {
-            if (view.isFocused()) {
-                return view;
+        for (View view : mEditList) {
+            if (view instanceof EditText && view.isFocused()) {
+                return (EditText) view;
             }
         }
         return null;
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    public void add(final EditText editText) {
-        addView(editText);
+    public void add(final EditText view) {
+        addView(view);
         //触摸事件触发键盘显示
-        editText.setOnTouchListener(new View.OnTouchListener() {
+        view.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (KeyboardUtils.isTouchOnView(editText, event.getRawX(), event.getRawY())) {
-                        display(editText);
+                    if (KeyboardUtils.isTouchOnView(v, event.getRawX(), event.getRawY())) {
+                        display(view);
                     }
                 }
                 return false;
@@ -178,12 +194,12 @@ public class KeyboardManage implements IManage {
 
     /**
      * 显示键盘
-     *
-     * @param editText
      */
-    public void display(EditText editText) {
+    public void display(View view) {
+        EditText editText = (EditText) view;
         //隐藏系统键盘
         KeyboardUtils.hideSystemKeyBoard(editText);
+        KeyboardUtils.setFocus(editText);
         //添加键盘控件进界面布局中
         if (UNLOADED == mKeyboardType) {
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -192,7 +208,7 @@ public class KeyboardManage implements IManage {
         }
         mKeyboardType = DISPLAY;
         mAdapter.getLayoutView().setVisibility(View.VISIBLE);
-        scrollY(editText);
+        scrollY(view);
         if (onKeyboardDisplayListener != null) {
             onKeyboardDisplayListener.onDisplay(editText);
         }
@@ -223,7 +239,7 @@ public class KeyboardManage implements IManage {
         }
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             moveX = ev.getRawX();
-            moveY = ev.getY();
+            moveY = ev.getRawY();
         }
         if (ev.getAction() == MotionEvent.ACTION_UP) {
             //判断是否滑动了界面，手指在界面上滑动时隐藏输入法
@@ -233,8 +249,13 @@ public class KeyboardManage implements IManage {
             }
         }
         if (ev.getAction() == MotionEvent.ACTION_UP) {
-            if (!KeyboardUtils.isTouchOnView(mTextList, ev.getRawX(), ev.getRawY())) {
+            //是否点击到输入框
+            boolean isTouchEdit = KeyboardUtils.isTouchOnView(mEditList, ev.getRawX(), ev.getRawY());
+            //是否点击到可触摸view
+            boolean isTouchView = KeyboardUtils.isTouchOnView(mTouchList, ev.getRawX(), ev.getRawY());
+            if (!isTouchEdit && !isTouchView) {
                 hide();
+                return;
             }
         }
     }
@@ -257,7 +278,7 @@ public class KeyboardManage implements IManage {
         focusView.setFocusableInTouchMode(true);
         focusView.requestFocus();
         //判断该控件是否加入观察列表中
-        if (mTextList.contains(focusView)) {
+        if (mEditList.contains(focusView)) {
             //必须先让布局恢复原位，否则位置显示不正确
             mDecorView.getChildAt(0).scrollTo(0, 0);
             scrollY(focusView);

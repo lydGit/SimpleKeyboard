@@ -13,7 +13,7 @@ public interface IManage {
     /**
      * 显示键盘
      */
-    void display(EditText editText);
+    void display(View view);
 
     /**
      * 隐藏键盘

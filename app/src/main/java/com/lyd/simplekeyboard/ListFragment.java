@@ -73,10 +73,17 @@ public class ListFragment extends Fragment {
             viewHolder.editText.setText(list.get(i));
             viewHolder.editText.setTag(i);
             keyboardManage.add(viewHolder.editText);
+            keyboardManage.addTouchView(viewHolder.textView);
             viewHolder.editText.setOnKeyListener(new OnKeyCompleteListener() {
                 @Override
                 public void onComplete(View view, int keyCode) {
                     list.set(i,viewHolder.editText.getText().toString());
+                }
+            });
+            viewHolder.textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    keyboardManage.display(viewHolder.editText);
                 }
             });
         }

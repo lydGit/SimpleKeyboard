@@ -4,11 +4,13 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -60,8 +62,8 @@ public class KeyboardUtils {
      *
      * @return true：在 false：不在
      */
-    public static boolean isTouchOnView(List<EditText> textList, float touchX, float touchY) {
-        for (View view : textList) {
+    public static boolean isTouchOnView(List<View> editList, float touchX, float touchY) {
+        for (View view : editList) {
             boolean b = isTouchOnView(view, touchX, touchY);
             if (b) {
                 return true;
@@ -130,6 +132,12 @@ public class KeyboardUtils {
             return null;
         }
         return getDecorView((View) view.getParent());
+    }
+
+    public static void setFocus(EditText editText){
+        editText.setFocusable(true);
+        editText.setFocusableInTouchMode(true);
+        editText.requestFocus();
     }
 
 }
