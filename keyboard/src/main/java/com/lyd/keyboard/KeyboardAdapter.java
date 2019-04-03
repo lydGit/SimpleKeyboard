@@ -83,7 +83,7 @@ public abstract class KeyboardAdapter implements IKeyboard {
         mKeyboardView.setOnKeyboardActionListener(new OnKeyboardActionListener() {
             @Override
             public void onKey(int primaryCode, int[] keyCodes) {
-                click(mManage.getFocusView(), primaryCode, keyCodes);
+                click((EditText) mManage.getFocusView(), primaryCode, keyCodes);
             }
         });
     }
@@ -91,12 +91,11 @@ public abstract class KeyboardAdapter implements IKeyboard {
     /**
      * 触发EditText中的点击事件
      */
-    private void dispatchKeyDown(int code){
-        EditText editText = mManage.getFocusView();
-        if (editText != null) {
+    private void dispatchKeyDown(int code, View view) {
+        if (view != null) {
             //触发EditText中的OnKeyListener
-            KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN,code);
-            editText.dispatchKeyEvent(event);
+            KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, code);
+            view.dispatchKeyEvent(event);
         }
     }
 
@@ -156,6 +155,11 @@ public abstract class KeyboardAdapter implements IKeyboard {
 
     @Override
     public void complete() {
-        dispatchKeyDown(KeyboardManage.STATUS_END);
+        complete(mManage.getFocusView());
+    }
+
+    @Override
+    public void complete(View view) {
+        dispatchKeyDown(KeyboardManage.STATUS_END, view);
     }
 }

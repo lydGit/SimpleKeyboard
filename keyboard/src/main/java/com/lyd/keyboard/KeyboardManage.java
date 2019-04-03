@@ -163,13 +163,13 @@ public class KeyboardManage implements IManage {
      *
      * @return
      */
-    public EditText getFocusView() {
+    public View getFocusView() {
         if (mEditList == null) {
             return null;
         }
         for (View view : mEditList) {
             if (view instanceof EditText && view.isFocused()) {
-                return (EditText) view;
+                return view;
             }
         }
         return null;
@@ -188,6 +188,14 @@ public class KeyboardManage implements IManage {
                     }
                 }
                 return false;
+            }
+        });
+        view.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus){
+                    mAdapter.complete(view);
+                }
             }
         });
     }

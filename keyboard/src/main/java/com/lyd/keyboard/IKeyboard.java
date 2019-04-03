@@ -65,4 +65,9 @@ public interface IKeyboard {
      */
     void complete();
 
+    /**
+     * 输入完成
+     */
+    void complete(View view);
+
 }
